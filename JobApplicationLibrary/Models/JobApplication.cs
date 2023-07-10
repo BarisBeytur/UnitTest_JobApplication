@@ -14,7 +14,7 @@ namespace JobApplicationLibrary.Models
 
         public List<string> TechStackList { get; set; }
 
-    }
 
+    }
     
 }

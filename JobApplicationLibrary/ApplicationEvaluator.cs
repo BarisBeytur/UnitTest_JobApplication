@@ -19,7 +19,7 @@ namespace JobApplicationLibrary
             "Microservice",
             "Visual Studio"
         };
-        
+
 
         public ApplicationEvaluator(IIdentityValidator identityValidator)
         {
@@ -31,11 +31,22 @@ namespace JobApplicationLibrary
         public ApplicationResult Evaluate(JobApplication form)
         {
 
+            if(form.Applicant is null)
+            {
+                throw new ArgumentNullException();
+            }
+
+
             if (form.Applicant.Age < minAge)
                 return ApplicationResult.AutoRejected;
 
+            identityValidator.ValidationMode = form.Applicant.Age > 50 ? ValidationMode.Detailed : ValidationMode.Quick;
 
-            var connectionSucceed = identityValidator.CheckConnectionToRemoteServer();
+            if (identityValidator.CountryDataProvider.CountryData.Country != "TURKEY")
+                return ApplicationResult.TransferredToCTO;
+
+
+            //var connectionSucceed = identityValidator.CheckConnectionToRemoteServer();
             var validIdentity = identityValidator.IsValid(form.Applicant.IdentityNumber);
 
             if (!validIdentity)
@@ -47,24 +58,18 @@ namespace JobApplicationLibrary
                 return ApplicationResult.AutoRejected;
 
 
-            if(sr>75 && form.YearsOfExperience >= autoAcceptedYearOfExperience)
+            if (sr > 75 && form.YearsOfExperience >= autoAcceptedYearOfExperience)
                 return ApplicationResult.AutoAccepted;
 
-            
-         
+
+
             return ApplicationResult.AutoAccepted;
         }
 
 
-
-
-
-
-
-
         private int GetTechStackSimilarityRate(List<string> techStacks)
         {
-            var matchedCount = 
+            var matchedCount =
                 techStacks
                 .Where(i => techStackList.Contains(i, StringComparer.OrdinalIgnoreCase))
                 .Count();
